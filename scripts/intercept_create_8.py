@@ -1,6 +1,6 @@
-import time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+
 
 def run():
     with sync_playwright() as p:
@@ -8,12 +8,14 @@ def run():
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             storage_state=Path("~/.config/pyphase6/session.json").expanduser(),
-            viewport={'width': 1280, 'height': 800}
+            viewport={"width": 1280, "height": 800},
         )
         page = context.new_page()
 
         def handle_request(request):
-            if request.method in ["POST", "PUT", "PATCH"] and ("card" in request.url.lower() or "vocab" in request.url.lower()):
+            if request.method in ["POST", "PUT", "PATCH"] and (
+                "card" in request.url.lower() or "vocab" in request.url.lower()
+            ):
                 print(f"REQUEST TO: {request.url}")
                 print(f"METHOD: {request.method}")
                 print(f"POST DATA: {request.post_data}")
@@ -63,6 +65,7 @@ def run():
             page.screenshot(path="create_cards_8_error.png")
         finally:
             browser.close()
+
 
 if __name__ == "__main__":
     run()

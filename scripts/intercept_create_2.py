@@ -1,13 +1,13 @@
-import time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+
 
 def run():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            storage_state=Path("~/.config/pyphase6/session.json").expanduser()
+            storage_state=Path("~/.config/pyphase6/session.json").expanduser(),
         )
         page = context.new_page()
 
@@ -16,7 +16,7 @@ def run():
                 print(f"REQUEST TO: {request.url}")
                 print(f"METHOD: {request.method}")
                 print(f"POST DATA: {request.post_data}")
-        
+
         page.on("request", handle_request)
 
         try:
@@ -48,7 +48,7 @@ def run():
                 inputs[0].fill("TestQuestion")
                 inputs[1].fill("TestAnswer")
                 page.wait_for_timeout(1000)
-                
+
                 print("Clicking SAVE AND NEXT...")
                 btn = page.get_by_text("SAVE AND NEXT", exact=False)
                 if btn.is_enabled():
@@ -63,6 +63,7 @@ def run():
             print(f"Error: {e}")
         finally:
             browser.close()
+
 
 if __name__ == "__main__":
     run()

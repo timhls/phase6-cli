@@ -2,6 +2,7 @@ import os
 import json
 from playwright.sync_api import sync_playwright
 
+
 def run():
     username = os.environ.get("PHASE6_USERNAME")
     password = os.environ.get("PHASE6_PASSWORD")
@@ -19,7 +20,7 @@ def run():
                     data = response.json()
                     with open("subjects_response.json", "w") as f:
                         json.dump(data, f, indent=2)
-                except Exception as e:
+                except Exception:
                     pass
 
         page.on("response", log_response)
@@ -31,10 +32,11 @@ def run():
             page.get_by_role("button", name="Login").click()
             page.wait_for_url("**/manage**", timeout=20000)
             page.wait_for_timeout(3000)
-        except Exception as e:
+        except Exception:
             pass
         finally:
             browser.close()
+
 
 if __name__ == "__main__":
     run()

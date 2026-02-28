@@ -2,6 +2,7 @@ import os
 import json
 from playwright.sync_api import sync_playwright
 
+
 def run():
     username = os.environ.get("PHASE6_USERNAME")
     password = os.environ.get("PHASE6_PASSWORD")
@@ -24,7 +25,7 @@ def run():
                     data = response.json()
                     print(f"<- {response.status} {response.request.url}")
                     print(json.dumps(data, indent=2))
-                except Exception as e:
+                except Exception:
                     pass
 
         page.on("request", log_request)
@@ -36,18 +37,19 @@ def run():
             page.fill('input[type="password"]', password)
             page.get_by_role("button", name="Login").click()
             page.wait_for_url("**/home**", timeout=15000)
-            
+
             page.goto("https://lernen.phase-6.de/v2/#/manage", wait_until="networkidle")
             page.wait_for_timeout(3000)
-            
+
             locator = page.get_by_text("HSK 1", exact=False).first
             locator.click()
             page.wait_for_timeout(5000)
-            
-        except Exception as e:
+
+        except Exception:
             pass
         finally:
             browser.close()
+
 
 if __name__ == "__main__":
     run()

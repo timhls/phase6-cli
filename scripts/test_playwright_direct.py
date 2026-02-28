@@ -1,6 +1,6 @@
 import os
-import json
 from playwright.sync_api import sync_playwright
+
 
 def run():
     username = os.environ.get("PHASE6_USERNAME")
@@ -18,7 +18,7 @@ def run():
         page.fill('input[type="password"]', password)
         page.get_by_role("button", name="Login").click()
         page.wait_for_url("**/home**", timeout=15000)
-        
+
         # We must execute JS in the page context! Let's see the text.
         result = page.evaluate("""
         async () => {
@@ -36,9 +36,10 @@ def run():
             };
         }
         """)
-        
+
         print(f"Subjects response from inside page: {str(result)[:300]}...")
         browser.close()
+
 
 if __name__ == "__main__":
     run()

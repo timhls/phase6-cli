@@ -1,13 +1,13 @@
-import time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+
 
 def run():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            storage_state=Path("~/.config/pyphase6/session.json").expanduser()
+            storage_state=Path("~/.config/pyphase6/session.json").expanduser(),
         )
         page = context.new_page()
 
@@ -32,6 +32,7 @@ def run():
             print(f"Error: {e}")
         finally:
             browser.close()
+
 
 if __name__ == "__main__":
     run()

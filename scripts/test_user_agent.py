@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 import httpx
 from playwright.sync_api import sync_playwright
 
@@ -20,15 +19,15 @@ with sync_playwright() as p:
     page.fill('input[type="password"]', password)
     page.get_by_role("button", name="Login").click()
     page.wait_for_url("**/home**", timeout=15000)
-    
+
     # Grab the whole state so we can see all headers/cookies
     state = context.storage_state()
-    
+
     # Let's try the request *inside* Playwright to prove it works
     resp = context.request.post(
         "https://lernen.phase-6.de/server.integration/subjectsCombined",
         data=json.dumps({"filterMode": "LIBRARY"}),
-        headers={"Content-Type": "application/json"}
+        headers={"Content-Type": "application/json"},
     )
     print(f"Playwright request status: {resp.status}")
     if resp.status == 200:
@@ -44,7 +43,7 @@ headers = {
     "Content-Type": "application/json",
     "Origin": "https://lernen.phase-6.de",
     "Referer": "https://lernen.phase-6.de/v2/",
-    "X-Requested-With": "XMLHttpRequest"
+    "X-Requested-With": "XMLHttpRequest",
 }
 
 print("Trying HTTPX...")

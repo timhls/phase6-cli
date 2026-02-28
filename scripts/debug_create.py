@@ -1,6 +1,6 @@
-import time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+
 
 def run():
     with sync_playwright() as p:
@@ -8,7 +8,7 @@ def run():
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             storage_state=Path("~/.config/pyphase6/session.json").expanduser(),
-            viewport={'width': 1280, 'height': 800}
+            viewport={"width": 1280, "height": 800},
         )
         page = context.new_page()
 
@@ -22,15 +22,20 @@ def run():
             page.wait_for_timeout(3000)
 
             # Dump the HTML of the whole form area
-            form_html = page.locator(".CreateCards").inner_html() if page.locator(".CreateCards").count() > 0 else page.locator("main, #main, .main-content, body").inner_html()
+            form_html = (
+                page.locator(".CreateCards").inner_html()
+                if page.locator(".CreateCards").count() > 0
+                else page.locator("main, #main, .main-content, body").inner_html()
+            )
             with open("create_cards_dom.html", "w") as f:
                 f.write(form_html)
             print("Saved DOM to create_cards_dom.html")
-            
+
         except Exception as e:
             print(f"Error: {e}")
         finally:
             browser.close()
+
 
 if __name__ == "__main__":
     run()

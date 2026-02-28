@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright
 
+
 def run():
     print("Fetching login page HTML...")
     with sync_playwright() as p:
@@ -11,17 +12,18 @@ def run():
 
         try:
             page.goto("https://lernen.phase-6.de/v2/#/login", wait_until="networkidle")
-            page.wait_for_timeout(3000) # Give it a few seconds to render
+            page.wait_for_timeout(3000)  # Give it a few seconds to render
             print("Page title:", page.title())
             html = page.content()
             with open("login_page.html", "w") as f:
                 f.write(html)
             print("Saved HTML to login_page.html")
-            
+
         except Exception as e:
             print(f"Error: {e}")
         finally:
             browser.close()
+
 
 if __name__ == "__main__":
     run()
