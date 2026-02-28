@@ -1,0 +1,29 @@
+[project]
+name = "pyphase6"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1",
+    "playwright>=1.58.0",
+    "pydantic>=2.12.5",
+    "typer>=0.24.1",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "ruff>=0.15.4",
+]
+
+[project.scripts]
+pyphase6 = "pyphase6.cli:app"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

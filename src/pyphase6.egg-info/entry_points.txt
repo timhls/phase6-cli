@@ -1,0 +1,2 @@
+[console_scripts]
+pyphase6 = pyphase6.cli:app
