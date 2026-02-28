@@ -1,6 +1,11 @@
-from typing import Dict, Any
-import httpx
+import json
+import uuid
+from pathlib import Path
+from typing import List, Tuple, Dict
+
 from playwright.sync_api import sync_playwright
+
+from pyphase6.models import Subject, VocabItem, VocabList
 
 
 class AuthError(Exception):
@@ -13,10 +18,10 @@ class APIConnectionError(Exception):
 
 class Phase6Client:
     BASE_URL = "https://lernen.phase-6.de"
+    SESSION_FILE = "~/.config/pyphase6/session.json"
 
     def __init__(self):
-        self.session_cookies: Dict[str, str] = {}
-        self.http_client = httpx.Client(base_url=self.BASE_URL)
+        self.session_file = Path(self.SESSION_FILE).expanduser()
 
     def login(self, username: str, password: str) -> None:
         """
@@ -32,38 +37,186 @@ class Phase6Client:
             try:
                 page.goto(f"{self.BASE_URL}/v2/#/login", wait_until="networkidle")
 
-                # Fill in login form
-                page.fill('input[type="email"], input[name="username"]', username)
+                page.fill(
+                    'input[type="email"], input[type="e-mail"], input[name="username"]', username
+                )
                 page.fill('input[type="password"]', password)
-                page.click('button[type="submit"], button:has-text("Login")')
+                page.get_by_role("button", name="Login").click()
 
-                # Wait for successful login (e.g., waiting for the manage page or a specific API request)
-                page.wait_for_url("**/manage**", timeout=15000)
+                # Wait for any navigation to complete, giving it 5s to process the login
+                page.wait_for_timeout(5000)
 
-                # Extract cookies
-                cookies = context.cookies()
-                self.session_cookies = {cookie["name"]: cookie["value"] for cookie in cookies}
-
-                # Update httpx client with these cookies
-                self.http_client.cookies.update(self.session_cookies)
+                self.session_file.parent.mkdir(parents=True, exist_ok=True)
+                context.storage_state(path=self.session_file)
 
             except Exception as e:
                 raise AuthError(f"Login failed: {e}")
             finally:
                 browser.close()
 
-    def get_vocabulary(self) -> Any:
-        # TODO: Implement actual endpoint call
-        pass
+    def _get_api_headers(self) -> Tuple[Dict[str, str], str]:
+        if not self.session_file.exists():
+            raise AuthError("Not logged in. Please run 'pyphase6 login' first.")
 
-    def add_vocabulary(self, item: Any) -> Any:
-        # TODO: Implement actual endpoint call
-        pass
+        with open(self.session_file) as f:
+            session_data = json.load(f)
 
-    def update_vocabulary(self, item_id: str, data: Any) -> Any:
-        # TODO: Implement actual endpoint call
-        pass
+        local_storage = None
+        for origin in session_data.get("origins", []):
+            if origin["origin"] == self.BASE_URL:
+                local_storage = origin["localStorage"]
+                break
 
-    def delete_vocabulary(self, item_id: str) -> Any:
-        # TODO: Implement actual endpoint call
-        pass
+        if not local_storage:
+            raise AuthError("Invalid session state. Please run 'pyphase6 login' again.")
+
+        user_state_str = next(
+            (item["value"] for item in local_storage if item["name"] == "persist:user"), None
+        )
+        if not user_state_str:
+            raise AuthError(
+                "Invalid session state (no user data). Please run 'pyphase6 login' again."
+            )
+
+        user_state = json.loads(user_state_str)
+        user_data = json.loads(user_state["user"])
+
+        jauth_token = user_data["jossoSessionId"]
+        email = user_data["email"]
+        owner_id = user_data["userDnsId"]
+        client_id = str(uuid.uuid4())
+
+        headers = {
+            "x-clientid": client_id,
+            "x-lbtoken": email,
+            "x-jauthtoken": jauth_token,
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+        }
+        return headers, owner_id
+
+    def get_subjects(self) -> List[Subject]:
+        headers, _ = self._get_api_headers()
+
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+            resp = ctx.post("/server.integration/subjectsCombined", data={})
+
+            if not resp.ok:
+                raise APIConnectionError(f"API returned non-200 code: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
+
+        subjects_data = data.get("replyContent", {}).get("subjects", [])
+        subjects = []
+        for s in subjects_data:
+            if "subjectId" in s and "subjectContent" in s:
+                subjects.append(Subject(**s))
+        return subjects
+
+    def get_vocabulary(self, subject_id: str, offset: int = 0, limit: int = 1000) -> VocabList:
+        headers, _ = self._get_api_headers()
+
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+            resp = ctx.post("/server.integration/cardList", data={"subjectId": subject_id})
+
+            if not resp.ok:
+                raise APIConnectionError(f"API returned non-200 code: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
+
+        cards_data = data.get("replyContent", {}).get("cards", [])
+        items = [VocabItem(**c) for c in cards_data]
+        return VocabList(items=items)
+
+    def add_vocabulary(self, subject_id: str, question: str, answer: str) -> str:
+        headers, owner_id = self._get_api_headers()
+
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+            new_card_id = str(uuid.uuid4())
+
+            payload = {
+                "addSessionId": "",
+                "addedByUserId": None,
+                "addedUserName": None,
+                "answer": answer,
+                "answerExample": None,
+                "answerTranscription": None,
+                "modificationDate": None,
+                "order": None,
+                "ownerId": owner_id,
+                "question": question,
+                "questionAnswerId": None,
+                "questionExample": None,
+                "questionTranscription": None,
+                "subjectIdToOwner": {"id": subject_id, "ownerId": owner_id},
+                "swappable": True,
+                "unitIdToOwner": {"id": f"0000-{subject_id}", "ownerId": owner_id},
+            }
+
+            resp = ctx.post(f"/server.integration/{owner_id}/cards/{new_card_id}", data=payload)
+
+            if not resp.ok:
+                raise APIConnectionError(f"Failed to add card: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
+
+            return new_card_id
+
+    def update_vocabulary(self, subject_id: str, card_id: str, question: str, answer: str) -> bool:
+        headers, owner_id = self._get_api_headers()
+
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+
+            payload = {
+                "answer": answer,
+                "answerExample": None,
+                "answerTranscription": None,
+                "modificationDate": None,
+                "order": None,
+                "ownerId": owner_id,
+                "question": question,
+                "questionAnswerId": None,
+                "questionExample": None,
+                "questionTranscription": None,
+                "subjectIdToOwner": {"id": subject_id, "ownerId": owner_id},
+                "swappable": True,
+                "unitIdToOwner": {"id": f"0000-{subject_id}", "ownerId": owner_id},
+            }
+
+            resp = ctx.put(f"/server.integration/{owner_id}/cards/{card_id}", data=payload)
+
+            if not resp.ok:
+                raise APIConnectionError(f"Failed to update card: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
+
+            return True
+
+    def delete_vocabulary(self, card_id: str) -> bool:
+        headers, owner_id = self._get_api_headers()
+
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+
+            resp = ctx.delete(f"/server.integration/{owner_id}/cards/{card_id}")
+
+            if not resp.ok:
+                raise APIConnectionError(f"Failed to delete card: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
+
+            return True
