@@ -1,3 +1,8 @@
+import re
+import csv
+import json
+from pathlib import Path
+from rich.progress import track
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -97,9 +102,6 @@ def vocab(
     console.print(table)
 
 
-import re
-
-
 def strip_html(text):
     return re.sub(r"<[^>]+>", "", text)
 
@@ -157,6 +159,62 @@ def delete(
         except APIConnectionError as e:
             console.print(f"[red]{e}[/red]")
             raise typer.Exit(1)
+
+
+@app.command(name="import")
+def import_vocab(
+    subject_id: str = typer.Argument(..., help="Subject ID to import into"),
+    file_path: Path = typer.Argument(..., help="Path to CSV or JSON file"),
+):
+    """Bulk import vocabulary from a CSV or JSON file."""
+    client = get_authenticated_client()
+
+    if not file_path.exists():
+        console.print(f"[red]File not found: {file_path}[/red]")
+        raise typer.Exit(1)
+
+    items = []
+
+    if file_path.suffix.lower() == ".csv":
+        with open(file_path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                q = row.get("question") or row.get("front") or row.get("q")
+                a = row.get("answer") or row.get("back") or row.get("a")
+                if q and a:
+                    items.append((q, a))
+    elif file_path.suffix.lower() == ".json":
+        with open(file_path, encoding="utf-8") as f:
+            data = json.load(f)
+            for row in data:
+                if isinstance(row, dict):
+                    q = row.get("question") or row.get("front") or row.get("q")
+                    a = row.get("answer") or row.get("back") or row.get("a")
+                    if q and a:
+                        items.append((q, a))
+    else:
+        console.print("[red]Unsupported file format. Please use .csv or .json[/red]")
+        raise typer.Exit(1)
+
+    if not items:
+        console.print(
+            "[yellow]No valid items found. Ensure headers/keys are 'question' and 'answer'.[/yellow]"
+        )
+        raise typer.Exit(1)
+
+    success_count = 0
+    console.print(f"Found {len(items)} items to import into subject {subject_id}.")
+
+    for q, a in track(items, description="Importing..."):
+        try:
+            q_html = f"<p>{q}</p>" if not q.startswith("<p>") else q
+            a_html = f"<p>{a}</p>" if not a.startswith("<p>") else a
+            client.add_vocabulary(subject_id, q_html, a_html)
+            success_count += 1
+        except APIConnectionError as e:
+            console.print(f"[red]Failed to add '{q}': {e}[/red]")
+
+    console.print(f"[green]Successfully imported {success_count}/{len(items)} cards![/green]")
 
 
 if __name__ == "__main__":
