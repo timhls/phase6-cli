@@ -55,12 +55,12 @@ This project combines reverse-engineering the private API used by the Phase-6 Si
 - [ ] Create a `login` command that securely prompts for a password and saves a temporary session token.
 - [ ] Create a `list` command to print vocabulary to the terminal (consider using the `rich` library for nice tables).
 - [ ] Create an `add` command to add a single word via terminal arguments.
-- [ ] Create a `sync` or `import` command to bulk-upload vocabulary from a local CSV or JSON file.
+- [x] Create a `sync` or `import` command to bulk-upload vocabulary from a local CSV or JSON file.
 
 ### Phase 5: Testing & CI/CD Pipeline
 *Objective: Ensure code reliability and automate quality checks.*
-- [ ] Write `pytest` unit tests for data models and mocked API responses.
-- [ ] Create a `.github/workflows/ci.yml` file.
-- [ ] Configure the GitHub Action to check out code, install `uv`, and run `pre-commit` on every pull request.
-- [ ] Configure the GitHub Action to run the `pytest` test suite.
-- [ ] Finalize `README.md` with installation and usage instructions.
+- [x] Write `pytest` unit tests for data models and mocked API responses.
+- [x] Create a `.github/workflows/ci.yml` file.
+- [x] Configure the GitHub Action to check out code, install `uv`, and run `pre-commit` on every pull request.
+- [x] Configure the GitHub Action to run the `pytest` test suite.
+- [x] Finalize `README.md` with installation and usage instructions.
