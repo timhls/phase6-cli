@@ -1,66 +1,28 @@
 # pyphase6
 
-## Project Description
-`pyphase6` is a modern Python client and Command Line Interface (CLI) for managing vocabulary in the Phase-6 web application. 
+## WHY
 
-This project combines reverse-engineering the private API used by the Phase-6 Single Page Application (`https://lernen.phase-6.de/v2/#/manage`) with robust browser automation using Playwright. This allows `pyphase6` to handle complex authentication and website remote control while still quickly and reliably managing vocabulary items via HTTP where possible.
+`pyphase6` is a modern Python client and Command Line Interface (CLI) for managing vocabulary in the Phase-6 web application (`https://lernen.phase-6.de/v2/#/manage`). It solves complex authentication flows using browser automation and falls back to direct, fast HTTP calls to reliably manage vocabulary items.
 
-### Core Technologies
-* **Dependency Management:** `uv` (for blazingly fast virtual environments and package resolution)
-* **Browser Automation:** `playwright` (for remote controlling the browser, website interactions, and authentication)
-* **HTTP Client:** `httpx` (for modern, asynchronous network requests)
-* **Data Validation:** `pydantic` (for parsing and typing JSON API responses)
-* **CLI Framework:** `typer` (for building an intuitive command-line interface)
-* **Code Quality:** `pre-commit` hooks running `ruff` (linting/formatting) and `mypy` (static typing)
-* **CI/CD:** GitHub Actions (for automated testing and quality checks)
+## WHAT
 
----
+- **Core Library & CLI (`pyphase6/`)**: Contains Typer CLI commands, the `Phase6Client`, and Pydantic data models.
+- **Testing & Scripts (`tests/`, `scripts/`)**: Includes pytest suites mocking API responses and ad-hoc execution scripts.
+- **Tech Stack**:
+  - Dependency & Build Management: `uv` (exclusively)
+  - Browser Automation: `playwright`
+  - HTTP Client: `httpx`
+  - Validation: `pydantic`
+  - CLI Framework: `typer`
+  - CI/CD: GitHub Actions (with `semantic-release` directly to GitHub Releases)
 
-## Step-by-Step Project Plan
+## HOW
 
-### Phase 1: API Reconnaissance & Reverse Engineering
-*Objective: Understand how the Phase-6 web app communicates with its backend servers.*
-- [x] Log into `https://lernen.phase-6.de/v2/#/manage` and open browser Developer Tools (Network tab).
-- [x] Isolate the authentication mechanism (e.g., Bearer token or session cookies).
-- [x] Identify and document the endpoint, HTTP method, and JSON payload required to **Read** the vocabulary list.
-- [x] Identify and document the endpoint required to **Create** a new vocabulary word.
-- [x] Identify and document the endpoint required to **Update** an existing word.
-- [x] Identify and document the endpoint required to **Delete** a word.
-- [x] Save sample JSON responses for all endpoints to use for data modeling.
+- **Commands**: Run all scripts and tests through `uv` (e.g., `uv run`, `uv sync`, `uv add`). Do not use `pip` or `poetry`.
+- **Code Quality**: Claude should not act as a linter. Use existing automated tools to ensure code style and types:
+  - Format: `uv run ruff format .`
+  - Lint: `uv run ruff check . --fix`
+  - Typecheck: `uv run mypy .`
+- **Testing**: Verify changes using `uv run pytest`.
 
-### Phase 2: Modern Project Setup
-*Objective: Initialize the repository with best-in-class Python tooling.*
-- [x] Initialize the project using `uv init pyphase6`.
-- [x] Update `pyproject.toml` with project metadata and core dependencies (`httpx`, `pydantic`, `typer`, `playwright`).
-- [x] Run `playwright install` to download required browser binaries.
-- [x] Add development dependencies (`pytest`, `ruff`, `mypy`, `pre-commit`).
-- [x] Create a `.pre-commit-config.yaml` to enforce `ruff` formatting/linting and `mypy` type-checking.
-- [x] Initialize Git, run `pre-commit install`, and make the first commit.
-
-### Phase 3: Core Library Development
-*Objective: Build the internal Python API client.*
-- [x] **Data Models:** Create Pydantic classes (e.g., `VocabItem`, `VocabList`) based on the JSON samples gathered in Phase 1.
-- [x] **Client Class:** Create a `Phase6Client` class that wraps `httpx.Client` for fast API calls and integrates a Playwright context for automated browser interactions.
-- [x] **Authentication:** Implement a `login(username, password)` method using Playwright to handle the browser login flow and extract the authorized session token/cookies.
-- [x] **CRUD Operations:** Implement the core API methods:
-  - [x] `get_vocabulary()`
-  - [x] `add_vocabulary(item)`
-  - [x] `update_vocabulary(item_id, data)`
-  - [x] `delete_vocabulary(item_id)`
-- [x] **Error Handling:** Define custom exceptions (e.g., `AuthError`, `APIConnectionError`) for robust failure states.
-
-### Phase 4: CLI Implementation
-*Objective: Make the tool usable from the terminal.*
-- [x] Initialize a Typer app instance.
-- [x] Create a `login` command that securely prompts for a password and saves a temporary session token.
-- [x] Create a `list` command to print vocabulary to the terminal (consider using the `rich` library for nice tables).
-- [x] Create an `add` command to add a single word via terminal arguments.
-- [x] Create a `sync` or `import` command to bulk-upload vocabulary from a local CSV or JSON file.
-
-### Phase 5: Testing & CI/CD Pipeline
-*Objective: Ensure code reliability and automate quality checks.*
-- [x] Write `pytest` unit tests for data models and mocked API responses.
-- [x] Create a `.github/workflows/ci.yml` file.
-- [x] Configure the GitHub Action to check out code, install `uv`, and run `pre-commit` on every pull request.
-- [x] Configure the GitHub Action to run the `pytest` test suite.
-- [x] Finalize `README.md` with installation and usage instructions.
+Note: Keep instructions here universally applicable. Task-specific instructions should be kept outside this file or discovered via context.
