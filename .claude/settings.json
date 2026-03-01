@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv sync --dev)",
+      "Bash(git add pyproject.toml .github/workflows/ci.yml uv.lock scripts/)"
+    ]
+  }
+}
