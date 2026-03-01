@@ -1,8 +1,8 @@
 import os
 import subprocess
 
-username = os.environ.get("PHASE6_USERNAME")
-password = os.environ.get("PHASE6_PASSWORD")
+username = os.environ.get("PHASE6_USERNAME", "")
+password = os.environ.get("PHASE6_PASSWORD", "")
 
 print("--- Running Login ---")
 proc = subprocess.run(

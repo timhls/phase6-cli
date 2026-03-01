@@ -3,8 +3,8 @@ import os
 import httpx
 from playwright.sync_api import sync_playwright
 
-username = os.environ.get("PHASE6_USERNAME")
-password = os.environ.get("PHASE6_PASSWORD")
+username = os.environ.get("PHASE6_USERNAME", "")
+password = os.environ.get("PHASE6_PASSWORD", "")
 
 print("Logging in with Playwright...")
 with sync_playwright() as p:
