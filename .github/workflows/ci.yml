@@ -76,6 +76,6 @@ jobs:
       - name: Publish to GitHub Packages
         run: |
           uv publish \
-            --publish-url "https://pypi.pkg.github.com/${{ github.repository_owner }}" \
+            --publish-url "https://npm.pkg.github.com/timhls" \
             --username "${{ github.actor }}" \
             --password "${{ secrets.GITHUB_TOKEN }}"
