@@ -13,18 +13,18 @@ This tool reverse-engineers the private Phase-6 Single Page Application API, com
 
 ## Installation
 
-Ensure you have Python 3.11+ installed. We recommend using `poetry` or `uv` to manage your environment.
+Ensure you have Python 3.11+ installed. We use `uv` to manage the environment and dependencies.
 
 ```bash
 # Clone the repository
 git clone https://github.com/timhls/phase6-cli.git
 cd phase6-cli
 
-# Install dependencies using Poetry
-poetry install
+# Install dependencies using uv
+uv sync
 
 # Install Playwright browsers (needed for the login flow)
-poetry run playwright install chromium
+uv run playwright install chromium
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ poetry run playwright install chromium
 Before doing anything, you need to log in to generate your session token. This opens a headless Chromium browser in the background.
 
 ```bash
-poetry run pyphase6 login
+uv run pyphase6 login
 ```
 *You will be prompted securely for your Phase-6 email and password.*
 
@@ -43,7 +43,7 @@ poetry run pyphase6 login
 List all the subjects (vocabulary books or lists) you currently own:
 
 ```bash
-poetry run pyphase6 subjects
+uv run pyphase6 subjects
 ```
 *Take note of the `Subject ID` from the output, as you will need it to manage cards within that subject.*
 
@@ -52,7 +52,7 @@ poetry run pyphase6 subjects
 View all vocabulary items inside a specific subject:
 
 ```bash
-poetry run pyphase6 vocab <SUBJECT_ID>
+uv run pyphase6 vocab <SUBJECT_ID>
 ```
 *(Use `--limit <N>` to change the number of items fetched).*
 
@@ -62,13 +62,13 @@ Add, update, or delete a single vocabulary card:
 
 ```bash
 # Add a new card
-poetry run pyphase6 add <SUBJECT_ID> "Your Question" "Your Answer"
+uv run pyphase6 add <SUBJECT_ID> "Your Question" "Your Answer"
 
 # Update an existing card
-poetry run pyphase6 update <SUBJECT_ID> <CARD_ID> "New Question" "New Answer"
+uv run pyphase6 update <SUBJECT_ID> <CARD_ID> "New Question" "New Answer"
 
 # Delete a card
-poetry run pyphase6 delete <CARD_ID>
+uv run pyphase6 delete <CARD_ID>
 ```
 
 ### 5. Bulk Import
@@ -92,7 +92,7 @@ question,answer
 
 Run the import command:
 ```bash
-poetry run pyphase6 import <SUBJECT_ID> import.csv
+uv run pyphase6 import <SUBJECT_ID> import.csv
 ```
 
 ## Development
@@ -101,10 +101,14 @@ This project uses `ruff` for linting/formatting, `mypy` for static type checking
 
 ```bash
 # Run all tests
-poetry run pytest
+uv run pytest
 
-# Run pre-commit checks
-poetry run pre-commit run --all-files
+# Format and lint code
+uv run ruff format .
+uv run ruff check .
+
+# Run type checks
+uv run mypy .
 ```
 
 ## License
