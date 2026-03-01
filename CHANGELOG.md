@@ -1,6 +1,32 @@
 # CHANGELOG
 
 
+## v0.1.1 (2026-03-01)
+
+### Bug Fixes
+
+- **ci**: Remove redundant build and unsupported registry publish
+  ([`78db060`](https://github.com/timhls/phase6-cli/commit/78db0603062b7d88b1ff8b22207a799b2fcb6c15))
+
+GitHub Packages does not natively support Python packages, so we removed the `uv publish` step that
+  was failing with a 404 error. `semantic-release publish` natively runs the build command specified
+  in `pyproject.toml` (`uv build`) and automatically uploads the resulting `.whl` and `.tar.gz`
+  files to the GitHub Release. We removed the redundant `uv build` step to prevent the 422 asset
+  collision error.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Continuous Integration
+
+- Fix github packages publish url
+  ([`c5fae10`](https://github.com/timhls/phase6-cli/commit/c5fae108266d761e0aa509d736dcddabe267386a))
+
+Update the publish URL for GitHub Packages to the correct endpoint to avoid a 404 error during uv
+  publish.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.1.0 (2026-03-01)
 
 ### Bug Fixes
