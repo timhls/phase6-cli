@@ -15,7 +15,7 @@ response = client.post(
 print(f"Login Response Status: {response.status_code}")
 try:
     print(f"Login JSON: {response.json()}")
-except:
+except Exception:
     print(f"Login Content: {response.text}")
 
 print(f"Cookies: {client.cookies}")
@@ -25,5 +25,5 @@ subjects_resp = client.post("/server.integration/subjectsCombined", json={"filte
 print(f"Subjects Response Status: {subjects_resp.status_code}")
 try:
     print(f"Subjects JSON: {json.dumps(subjects_resp.json())[:300]}")
-except:
+except Exception:
     print(f"Subjects Content: {subjects_resp.text}")

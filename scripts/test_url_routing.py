@@ -3,8 +3,8 @@ from playwright.sync_api import sync_playwright
 
 
 def run():
-    username = os.environ.get("PHASE6_USERNAME")
-    password = os.environ.get("PHASE6_PASSWORD")
+    os.environ.get("PHASE6_USERNAME")
+    os.environ.get("PHASE6_PASSWORD")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
