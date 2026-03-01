@@ -3,6 +3,6 @@
   "extends": [
     "config:best-practices"
   ],
-  "enabledManagers": ["uv", "github-actions"],
+  "enabledManagers": ["pep621", "github-actions"],
   "rangeStrategy": "pin"
 }
