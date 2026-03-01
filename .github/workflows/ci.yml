@@ -65,17 +65,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build package
-        run: uv build
-
       - name: Publish to GitHub Releases
         run: uv run semantic-release publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to GitHub Packages
-        run: |
-          uv publish \
-            --publish-url "https://npm.pkg.github.com/timhls" \
-            --username "${{ github.actor }}" \
-            --password "${{ secrets.GITHUB_TOKEN }}"
