@@ -1,6 +1,61 @@
 # CHANGELOG
 
 
+## v0.1.2 (2026-03-01)
+
+### Bug Fixes
+
+- **deps**: Configure renovate with pep621 manager for uv
+  ([`e9a8666`](https://github.com/timhls/phase6-cli/commit/e9a8666ea7da341a0c1c7d3dcb8c96e20b0201c8))
+
+The Renovate App failed to initialize because it does not recognize "uv" as an explicitly enabled
+  manager. Renovate natively supports `uv` projects (and `uv.lock`) via the `pep621` manager.
+  Replaced `"uv"` with `"pep621"` in `renovate.json`.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Chores
+
+- **claude**: Update allowed permissions for git operations
+  ([`bb02ef2`](https://github.com/timhls/phase6-cli/commit/bb02ef28ce37cd863ba0dbe66e2f1e4cf3928950))
+
+Update `.claude/settings.json` to automatically allow specific git commands (commit, push, and
+  targeted adds) so the assistant can perform version control tasks more smoothly.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- **deps**: Configure renovate and strictly pin all dependencies
+  ([`20409d0`](https://github.com/timhls/phase6-cli/commit/20409d0992defe727e3e3ed419a2b3048eb47b4d))
+
+- Added `renovate.json` configuring the GitHub App to update `uv` packages and `github-actions`. -
+  Set `rangeStrategy: pin` in the Renovate config to automatically replace ranges with strict
+  versions. - Updated `pyproject.toml` to strictly pin `httpx`, `playwright`, `pydantic`, `typer`,
+  `mypy`, `pytest`, `python-semantic-release`, and `ruff` to their exact resolved versions from
+  `uv.lock`. - Synchronized `uv.lock` with strictly pinned `==` declarations.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Documentation
+
+- Rewrite CLAUDE.md according to context engineering best practices
+  ([`d4a899c`](https://github.com/timhls/phase6-cli/commit/d4a899c88cb7980b4493d2e4d57bdc613d08cfbe))
+
+Refactored `CLAUDE.md` to be shorter and more focused based on best practices for coding agents. It
+  now cleanly answers WHY, WHAT, and HOW without bloating the context window with resolved task
+  lists or linters. Also committed a small `uv.lock` change reflecting the recent version bump.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+- Update README.md to use uv instead of poetry
+  ([`28d0862`](https://github.com/timhls/phase6-cli/commit/28d08629343a372652058c223cf8b3e71a726eff))
+
+Migrated the README installation, usage, and development instructions to use `uv sync` and `uv run`
+  instead of `poetry`. Replaced the outdated `pre-commit` command with explicit `ruff` and `mypy`
+  commands.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.1.1 (2026-03-01)
 
 ### Bug Fixes
