@@ -61,3 +61,52 @@ def test_add_command_with_html(mock_get_client):
     mock_client.add_vocabulary.assert_called_once_with(
         "sub123", "<p><b>Front</b> Side</p>", "<p>Back Side</p>"
     )
+
+
+@patch("pyphase6.cli.get_authenticated_client")
+def test_update_command(mock_get_client):
+    mock_client = MagicMock()
+    mock_get_client.return_value = mock_client
+
+    result = runner.invoke(app, ["update", "sub123", "card456", "New Question", "New Answer"])
+
+    assert result.exit_code == 0
+    assert "Successfully updated card card456" in result.stdout
+    mock_client.update_vocabulary.assert_called_once_with(
+        "sub123", "card456", "<p>New Question</p>", "<p>New Answer</p>"
+    )
+
+
+@patch("pyphase6.cli.get_authenticated_client")
+def test_delete_command(mock_get_client):
+    mock_client = MagicMock()
+    mock_get_client.return_value = mock_client
+
+    result = runner.invoke(app, ["delete", "card456"])
+
+    assert result.exit_code == 0
+    assert "Successfully deleted card card456" in result.stdout
+    mock_client.delete_vocabulary.assert_called_once_with("card456")
+
+
+@patch("pyphase6.cli.get_authenticated_client")
+def test_vocab_command(mock_get_client):
+    mock_client = MagicMock()
+    mock_get_client.return_value = mock_client
+
+    mock_item = MagicMock()
+    mock_item.cardIdString = "abcdef123456"
+    mock_item.cardContent.question = "<p>Hello</p>"
+    mock_item.cardContent.answer = "<p>Hallo</p>"
+    mock_item.normal.phase = 3
+
+    mock_vocab_list = MagicMock()
+    mock_vocab_list.items = [mock_item]
+    mock_client.get_vocabulary.return_value = mock_vocab_list
+
+    result = runner.invoke(app, ["vocab", "sub123"])
+
+    assert result.exit_code == 0
+    assert "Hello" in result.stdout
+    assert "Hallo" in result.stdout
+    mock_client.get_vocabulary.assert_called_once_with(subject_id="sub123", limit=100)
