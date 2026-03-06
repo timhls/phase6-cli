@@ -132,7 +132,7 @@ class Phase6Client:
 
         cards_data = data.get("replyContent", {}).get("cards", [])
         items = [VocabItem(**c) for c in cards_data]
-        return VocabList(items=items)
+        return VocabList(items=items[offset : offset + limit])
 
     def add_vocabulary(self, subject_id: str, question: str, answer: str) -> str:
         headers, owner_id = self._get_api_headers()

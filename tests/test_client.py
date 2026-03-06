@@ -121,3 +121,141 @@ def test_add_vocabulary_success(mock_sync_playwright, mock_headers):
     assert kwargs["data"]["question"] == "<p>Q</p>"
     assert kwargs["data"]["answer"] == "<p>A</p>"
     assert kwargs["data"]["subjectIdToOwner"]["id"] == "sub1"
+
+
+@patch("pyphase6.client.Phase6Client._get_api_headers")
+@patch("pyphase6.client.sync_playwright")
+def test_get_vocabulary_success(mock_sync_playwright, mock_headers):
+    mock_headers.return_value = ({"dummy": "header"}, "owner1")
+
+    mock_ctx = MagicMock()
+    mock_p = MagicMock()
+    mock_p.request.new_context.return_value = mock_ctx
+    mock_sync_playwright.return_value.__enter__.return_value = mock_p
+
+    mock_resp = MagicMock()
+    mock_resp.ok = True
+    mock_resp.json.return_value = {
+        "httpCode": 200,
+        "replyContent": {
+            "cards": [
+                {
+                    "cardIdString": "card1",
+                    "normal": {"active": True, "isDue": False, "phase": 2},
+                    "cardContent": {"question": "Q1", "answer": "A1"},
+                },
+                {
+                    "cardIdString": "card2",
+                    "normal": {"active": True, "isDue": False, "phase": 3},
+                    "cardContent": {"question": "Q2", "answer": "A2"},
+                },
+                {
+                    "cardIdString": "card3",
+                    "normal": {"active": True, "isDue": False, "phase": 4},
+                    "cardContent": {"question": "Q3", "answer": "A3"},
+                },
+            ]
+        },
+    }
+    mock_ctx.post.return_value = mock_resp
+
+    client = Phase6Client()
+    vocab_list = client.get_vocabulary("sub1", limit=2)
+
+    assert len(vocab_list.items) == 2
+    assert vocab_list.items[0].cardIdString == "card1"
+    assert vocab_list.items[1].cardIdString == "card2"
+    mock_ctx.post.assert_called_once_with(
+        "/server.integration/cardList", data={"subjectId": "sub1"}
+    )
+
+
+@patch("pyphase6.client.Phase6Client._get_api_headers")
+@patch("pyphase6.client.sync_playwright")
+def test_get_vocabulary_with_offset(mock_sync_playwright, mock_headers):
+    mock_headers.return_value = ({"dummy": "header"}, "owner1")
+
+    mock_ctx = MagicMock()
+    mock_p = MagicMock()
+    mock_p.request.new_context.return_value = mock_ctx
+    mock_sync_playwright.return_value.__enter__.return_value = mock_p
+
+    mock_resp = MagicMock()
+    mock_resp.ok = True
+    mock_resp.json.return_value = {
+        "httpCode": 200,
+        "replyContent": {
+            "cards": [
+                {
+                    "cardIdString": "card1",
+                    "normal": {"active": True, "isDue": False, "phase": 1},
+                    "cardContent": {"question": "Q1", "answer": "A1"},
+                },
+                {
+                    "cardIdString": "card2",
+                    "normal": {"active": True, "isDue": False, "phase": 2},
+                    "cardContent": {"question": "Q2", "answer": "A2"},
+                },
+                {
+                    "cardIdString": "card3",
+                    "normal": {"active": True, "isDue": False, "phase": 3},
+                    "cardContent": {"question": "Q3", "answer": "A3"},
+                },
+            ]
+        },
+    }
+    mock_ctx.post.return_value = mock_resp
+
+    client = Phase6Client()
+    vocab_list = client.get_vocabulary("sub1", offset=1, limit=2)
+
+    assert len(vocab_list.items) == 2
+    assert vocab_list.items[0].cardIdString == "card2"
+    assert vocab_list.items[1].cardIdString == "card3"
+
+
+@patch("pyphase6.client.Phase6Client._get_api_headers")
+@patch("pyphase6.client.sync_playwright")
+def test_update_vocabulary_success(mock_sync_playwright, mock_headers):
+    mock_headers.return_value = ({"dummy": "header"}, "owner1")
+
+    mock_ctx = MagicMock()
+    mock_p = MagicMock()
+    mock_p.request.new_context.return_value = mock_ctx
+    mock_sync_playwright.return_value.__enter__.return_value = mock_p
+
+    mock_resp = MagicMock()
+    mock_resp.ok = True
+    mock_resp.json.return_value = {"httpCode": 200, "replyContent": "Card updated"}
+    mock_ctx.put.return_value = mock_resp
+
+    client = Phase6Client()
+    result = client.update_vocabulary("sub1", "card123", "<p>New Q</p>", "<p>New A</p>")
+
+    assert result is True
+    args, kwargs = mock_ctx.put.call_args
+    assert args[0] == "/server.integration/owner1/cards/card123"
+    assert kwargs["data"]["question"] == "<p>New Q</p>"
+    assert kwargs["data"]["answer"] == "<p>New A</p>"
+
+
+@patch("pyphase6.client.Phase6Client._get_api_headers")
+@patch("pyphase6.client.sync_playwright")
+def test_delete_vocabulary_success(mock_sync_playwright, mock_headers):
+    mock_headers.return_value = ({"dummy": "header"}, "owner1")
+
+    mock_ctx = MagicMock()
+    mock_p = MagicMock()
+    mock_p.request.new_context.return_value = mock_ctx
+    mock_sync_playwright.return_value.__enter__.return_value = mock_p
+
+    mock_resp = MagicMock()
+    mock_resp.ok = True
+    mock_resp.json.return_value = {"httpCode": 200, "replyContent": "Card deleted"}
+    mock_ctx.delete.return_value = mock_resp
+
+    client = Phase6Client()
+    result = client.delete_vocabulary("card123")
+
+    assert result is True
+    mock_ctx.delete.assert_called_once_with("/server.integration/owner1/cards/card123")
