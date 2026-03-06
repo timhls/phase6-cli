@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.1.3 (2026-03-06)
+
+### Bug Fixes
+
+- Remove unused httpx dep, add rich as direct dep, fix get_vocabulary limit/offset, add tests
+  ([`7c4bbbb`](https://github.com/timhls/phase6-cli/commit/7c4bbbb9526786b4933e8cc93721b32a549f4380))
+
+Co-authored-by: timhls <11960973+timhls@users.noreply.github.com>
+
+### Chores
+
+- **claude**: Allow adding renovate.json
+  ([`274e5f7`](https://github.com/timhls/phase6-cli/commit/274e5f7d54338f21f4d2ae629ef18fc69ec041dc))
+
+Automatically approve `git add renovate.json` commands for Claude.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v0.1.2 (2026-03-01)
 
 ### Bug Fixes
