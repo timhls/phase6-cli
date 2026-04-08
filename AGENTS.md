@@ -19,7 +19,7 @@
 ## HOW
 
 - **Commands**: Run all scripts and tests through `uv` (e.g., `uv run`, `uv sync`, `uv add`). Do not use `pip` or `poetry`.
-- **Code Quality**: Claude should not act as a linter. Use existing automated tools to ensure code style and types:
+- **Code Quality**: The agent should not act as a linter. Use existing automated tools to ensure code style and types:
   - Format: `uv run ruff format .`
   - Lint: `uv run ruff check . --fix`
   - Typecheck: `uv run mypy .`
