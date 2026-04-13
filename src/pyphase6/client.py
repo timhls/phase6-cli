@@ -1,7 +1,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 from playwright.sync_api import sync_playwright
 
@@ -201,7 +201,7 @@ class Phase6Client:
         return new_unit_id
 
     def add_vocabulary(
-        self, subject_id: str, question: str, answer: str, unit_id: str = None
+        self, subject_id: str, question: str, answer: str, unit_id: Optional[str] = None
     ) -> str:
         headers, owner_id = self._get_api_headers()
 
@@ -246,7 +246,7 @@ class Phase6Client:
             return new_card_id
 
     def update_vocabulary(
-        self, subject_id: str, card_id: str, question: str, answer: str, unit_id: str = None
+        self, subject_id: str, card_id: str, question: str, answer: str, unit_id: Optional[str] = None
     ) -> bool:
         headers, owner_id = self._get_api_headers()
 
