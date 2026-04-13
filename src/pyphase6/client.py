@@ -135,41 +135,32 @@ class Phase6Client:
         return VocabList(items=items[offset : offset + limit])
 
     def get_units(self, subject_id: str) -> dict:
-        """Returns a mapping of {unit_name: unit_id} for a given subject."""
-        headers, owner_id = self._get_api_headers()
+        """Returns a mapping of {unit_name: unit_id} for a given subject using unitsFiltered."""
+        headers, _ = self._get_api_headers()
 
-        # Step 1: Find all unit IDs from the cards
-        vocab = self.get_vocabulary(subject_id)
-        unit_ids = set()
-        for item in vocab.items:
-            if item.cardContent and item.cardContent.unitIdToOwner:
-                uid = item.cardContent.unitIdToOwner.get("id")
-                if uid and not uid.startswith("0000-"):
-                    unit_ids.add(uid)
-
-        if not unit_ids:
-            return {}
-
-        # Step 2: Fetch names for these units
         with sync_playwright() as p:
             ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
-            payload = {"data": [{"objectId": {"id": u, "ownerId": owner_id}} for u in unit_ids]}
-            resp = ctx.post("/server.integration/UnitContent/bulk/get", data=payload)
+            resp = ctx.post(
+                "/server.integration/unitsFiltered",
+                data={"subjectId": subject_id, "filterMode": "OWN"},
+            )
 
             if not resp.ok:
-                raise APIConnectionError(f"Failed to fetch unit names: {resp.status} {resp.text()}")
+                raise APIConnectionError(f"Failed to fetch units: {resp.status} {resp.text()}")
 
             data = resp.json()
             if data.get("httpCode") != 200:
                 raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
 
         units = {}
-        for entry in data.get("replyContent", {}).get("data", []):
-            if "data" in entry and "name" in entry["data"]:
-                u_id = entry.get("objectId", {}).get("id")
-                u_name = entry["data"]["name"]
-                if u_id and u_name:
-                    units[u_name] = u_id
+        units_data = data.get("replyContent", {}).get("units", [])
+        # Sort by modificationDate or just take the first one found for each name
+        # to handle duplicates gracefully.
+        for u in units_data:
+            u_id = u.get("unitId", {}).get("id")
+            u_name = u.get("unitContent", {}).get("name")
+            if u_id and u_name and u_name not in units:
+                units[u_name] = u_id
 
         return units
 
@@ -301,6 +292,24 @@ class Phase6Client:
 
             if not resp.ok:
                 raise APIConnectionError(f"Failed to delete card: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
+
+            return True
+
+    def delete_unit(self, unit_id: str) -> bool:
+        """Deletes a unit by its ID."""
+        headers, owner_id = self._get_api_headers()
+
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+
+            resp = ctx.delete(f"/server.integration/{owner_id}/units/{unit_id}")
+
+            if not resp.ok:
+                raise APIConnectionError(f"Failed to delete unit: {resp.status} {resp.text()}")
 
             data = resp.json()
             if data.get("httpCode") != 200:
