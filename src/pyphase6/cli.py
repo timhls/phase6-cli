@@ -111,15 +111,21 @@ def add(
     subject_id: str = typer.Argument(..., help="Subject ID to add to"),
     question: str = typer.Argument(..., help="Front of the card"),
     answer: str = typer.Argument(..., help="Back of the card"),
+    unit: str = typer.Option(None, help="Name of the unit to add the card to"),
 ):
     """Add a new vocabulary card to a subject."""
     client = get_authenticated_client()
     with console.status(f"Adding card to {subject_id}..."):
         try:
+            unit_id = None
+            if unit:
+                console.log(f"Looking up or creating unit '{unit}'...")
+                unit_id = client.get_or_create_unit(subject_id, unit)
+                
             # Wrap in paragraph tags if not present, as the server expects rich text
             q_html = f"<p>{question}</p>" if not question.startswith("<p>") else question
             a_html = f"<p>{answer}</p>" if not answer.startswith("<p>") else answer
-            card_id = client.add_vocabulary(subject_id, q_html, a_html)
+            card_id = client.add_vocabulary(subject_id, q_html, a_html, unit_id=unit_id)
             console.print(f"[green]Successfully added card {card_id}[/green]")
         except APIConnectionError as e:
             console.print(f"[red]{e}[/red]")
@@ -132,14 +138,20 @@ def update(
     card_id: str = typer.Argument(..., help="ID of the card to update"),
     question: str = typer.Argument(..., help="New front of the card"),
     answer: str = typer.Argument(..., help="New back of the card"),
+    unit: str = typer.Option(None, help="Name of the unit to update the card into"),
 ):
     """Update an existing vocabulary card."""
     client = get_authenticated_client()
     with console.status(f"Updating card {card_id}..."):
         try:
+            unit_id = None
+            if unit:
+                console.log(f"Looking up or creating unit '{unit}'...")
+                unit_id = client.get_or_create_unit(subject_id, unit)
+            
             q_html = f"<p>{question}</p>" if not question.startswith("<p>") else question
             a_html = f"<p>{answer}</p>" if not answer.startswith("<p>") else answer
-            client.update_vocabulary(subject_id, card_id, q_html, a_html)
+            client.update_vocabulary(subject_id, card_id, q_html, a_html, unit_id=unit_id)
             console.print(f"[green]Successfully updated card {card_id}[/green]")
         except APIConnectionError as e:
             console.print(f"[red]{e}[/red]")
@@ -165,6 +177,7 @@ def delete(
 def import_vocab(
     subject_id: str = typer.Argument(..., help="Subject ID to import into"),
     file_path: Path = typer.Argument(..., help="Path to CSV or JSON file"),
+    unit: str = typer.Option(None, help="Name of the unit to import the cards into"),
 ):
     """Bulk import vocabulary from a CSV or JSON file."""
     client = get_authenticated_client()
@@ -205,11 +218,20 @@ def import_vocab(
     success_count = 0
     console.print(f"Found {len(items)} items to import into subject {subject_id}.")
 
+    unit_id = None
+    if unit:
+        try:
+            with console.status(f"Looking up or creating unit '{unit}'..."):
+                unit_id = client.get_or_create_unit(subject_id, unit)
+        except APIConnectionError as e:
+            console.print(f"[red]Failed to setup unit: {e}[/red]")
+            raise typer.Exit(1)
+
     for q, a in track(items, description="Importing..."):
         try:
             q_html = f"<p>{q}</p>" if not q.startswith("<p>") else q
             a_html = f"<p>{a}</p>" if not a.startswith("<p>") else a
-            client.add_vocabulary(subject_id, q_html, a_html)
+            client.add_vocabulary(subject_id, q_html, a_html, unit_id=unit_id)
             success_count += 1
         except APIConnectionError as e:
             console.print(f"[red]Failed to add '{q}': {e}[/red]")
