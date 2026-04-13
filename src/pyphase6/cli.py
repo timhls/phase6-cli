@@ -121,7 +121,7 @@ def add(
             if unit:
                 console.log(f"Looking up or creating unit '{unit}'...")
                 unit_id = client.get_or_create_unit(subject_id, unit)
-                
+
             # Wrap in paragraph tags if not present, as the server expects rich text
             q_html = f"<p>{question}</p>" if not question.startswith("<p>") else question
             a_html = f"<p>{answer}</p>" if not answer.startswith("<p>") else answer
@@ -148,7 +148,7 @@ def update(
             if unit:
                 console.log(f"Looking up or creating unit '{unit}'...")
                 unit_id = client.get_or_create_unit(subject_id, unit)
-            
+
             q_html = f"<p>{question}</p>" if not question.startswith("<p>") else question
             a_html = f"<p>{answer}</p>" if not answer.startswith("<p>") else answer
             client.update_vocabulary(subject_id, card_id, q_html, a_html, unit_id=unit_id)
