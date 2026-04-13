@@ -174,6 +174,21 @@ def delete(
             raise typer.Exit(1)
 
 
+@app.command(name="delete-unit")
+def delete_unit(
+    unit_id: str = typer.Argument(..., help="ID of the unit to delete"),
+):
+    """Delete a unit."""
+    client = get_authenticated_client()
+    with console.status(f"Deleting unit {unit_id}..."):
+        try:
+            client.delete_unit(unit_id)
+            console.print(f"[green]Successfully deleted unit {unit_id}[/green]")
+        except APIConnectionError as e:
+            console.print(f"[red]{e}[/red]")
+            raise typer.Exit(1)
+
+
 @app.command(name="import")
 def import_vocab(
     subject_id: str = typer.Argument(..., help="Subject ID to import into"),

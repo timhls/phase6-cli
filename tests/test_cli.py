@@ -108,6 +108,18 @@ def test_delete_command(mock_get_client):
 
 
 @patch("pyphase6.cli.get_authenticated_client")
+def test_delete_unit_command(mock_get_client):
+    mock_client = MagicMock()
+    mock_get_client.return_value = mock_client
+
+    result = runner.invoke(app, ["delete-unit", "unit123"])
+
+    assert result.exit_code == 0
+    assert "Successfully deleted unit unit123" in result.stdout
+    mock_client.delete_unit.assert_called_once_with("unit123")
+
+
+@patch("pyphase6.cli.get_authenticated_client")
 def test_vocab_command(mock_get_client):
     mock_client = MagicMock()
     mock_get_client.return_value = mock_client
