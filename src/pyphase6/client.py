@@ -1,7 +1,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 from playwright.sync_api import sync_playwright
 
@@ -134,12 +134,86 @@ class Phase6Client:
         items = [VocabItem(**c) for c in cards_data]
         return VocabList(items=items[offset : offset + limit])
 
-    def add_vocabulary(self, subject_id: str, question: str, answer: str) -> str:
+    def get_units(self, subject_id: str) -> dict:
+        """Returns a mapping of {unit_name: unit_id} for a given subject."""
+        headers, owner_id = self._get_api_headers()
+
+        # Step 1: Find all unit IDs from the cards
+        vocab = self.get_vocabulary(subject_id)
+        unit_ids = set()
+        for item in vocab.items:
+            if item.cardContent and item.cardContent.unitIdToOwner:
+                uid = item.cardContent.unitIdToOwner.get("id")
+                if uid and not uid.startswith("0000-"):
+                    unit_ids.add(uid)
+
+        if not unit_ids:
+            return {}
+
+        # Step 2: Fetch names for these units
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+            payload = {"data": [{"objectId": {"id": u, "ownerId": owner_id}} for u in unit_ids]}
+            resp = ctx.post("/server.integration/UnitContent/bulk/get", data=payload)
+
+            if not resp.ok:
+                raise APIConnectionError(f"Failed to fetch unit names: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code in JSON: {data}")
+
+        units = {}
+        for entry in data.get("replyContent", {}).get("data", []):
+            if "data" in entry and "name" in entry["data"]:
+                u_id = entry.get("objectId", {}).get("id")
+                u_name = entry["data"]["name"]
+                if u_id and u_name:
+                    units[u_name] = u_id
+
+        return units
+
+    def get_or_create_unit(self, subject_id: str, unit_name: str) -> str:
+        """Gets the unit ID for a given name, creating it if it doesn't exist."""
+        units = self.get_units(subject_id)
+        if unit_name in units:
+            return units[unit_name]
+
+        headers, owner_id = self._get_api_headers()
+        new_unit_id = str(uuid.uuid4())
+        payload = {
+            "name": unit_name,
+            "order": 100,  # Default order
+            "subjectIdToOwner": {"id": subject_id, "ownerId": owner_id},
+        }
+
+        with sync_playwright() as p:
+            ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+            resp = ctx.post(f"/server.integration/{owner_id}/units/{new_unit_id}", data=payload)
+
+            if not resp.ok:
+                raise APIConnectionError(f"Failed to create unit: {resp.status} {resp.text()}")
+
+            data = resp.json()
+            if data.get("httpCode") != 200:
+                raise APIConnectionError(f"API returned non-200 code creating unit: {data}")
+
+        return new_unit_id
+
+    def add_vocabulary(
+        self, subject_id: str, question: str, answer: str, unit_id: Optional[str] = None
+    ) -> str:
         headers, owner_id = self._get_api_headers()
 
         with sync_playwright() as p:
             ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
             new_card_id = str(uuid.uuid4())
+
+            target_unit = (
+                {"id": unit_id, "ownerId": owner_id}
+                if unit_id
+                else {"id": f"0000-{subject_id}", "ownerId": owner_id}
+            )
 
             payload = {
                 "addSessionId": "",
@@ -157,7 +231,7 @@ class Phase6Client:
                 "questionTranscription": None,
                 "subjectIdToOwner": {"id": subject_id, "ownerId": owner_id},
                 "swappable": True,
-                "unitIdToOwner": {"id": f"0000-{subject_id}", "ownerId": owner_id},
+                "unitIdToOwner": target_unit,
             }
 
             resp = ctx.post(f"/server.integration/{owner_id}/cards/{new_card_id}", data=payload)
@@ -171,11 +245,24 @@ class Phase6Client:
 
             return new_card_id
 
-    def update_vocabulary(self, subject_id: str, card_id: str, question: str, answer: str) -> bool:
+    def update_vocabulary(
+        self,
+        subject_id: str,
+        card_id: str,
+        question: str,
+        answer: str,
+        unit_id: Optional[str] = None,
+    ) -> bool:
         headers, owner_id = self._get_api_headers()
 
         with sync_playwright() as p:
             ctx = p.request.new_context(base_url=self.BASE_URL, extra_http_headers=headers)
+
+            target_unit = (
+                {"id": unit_id, "ownerId": owner_id}
+                if unit_id
+                else {"id": f"0000-{subject_id}", "ownerId": owner_id}
+            )
 
             payload = {
                 "answer": answer,
@@ -190,7 +277,7 @@ class Phase6Client:
                 "questionTranscription": None,
                 "subjectIdToOwner": {"id": subject_id, "ownerId": owner_id},
                 "swappable": True,
-                "unitIdToOwner": {"id": f"0000-{subject_id}", "ownerId": owner_id},
+                "unitIdToOwner": target_unit,
             }
 
             resp = ctx.put(f"/server.integration/{owner_id}/cards/{card_id}", data=payload)

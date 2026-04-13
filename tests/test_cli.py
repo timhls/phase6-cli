@@ -44,7 +44,7 @@ def test_add_command(mock_get_client):
     assert result.exit_code == 0
     assert "Successfully added card new_card_uuid" in result.stdout
     mock_client.add_vocabulary.assert_called_once_with(
-        "sub123", "<p>Front Side</p>", "<p>Back Side</p>"
+        "sub123", "<p>Front Side</p>", "<p>Back Side</p>", unit_id=None
     )
 
 
@@ -59,7 +59,25 @@ def test_add_command_with_html(mock_get_client):
 
     assert result.exit_code == 0
     mock_client.add_vocabulary.assert_called_once_with(
-        "sub123", "<p><b>Front</b> Side</p>", "<p>Back Side</p>"
+        "sub123", "<p><b>Front</b> Side</p>", "<p>Back Side</p>", unit_id=None
+    )
+
+
+@patch("pyphase6.cli.get_authenticated_client")
+def test_add_command_with_unit(mock_get_client):
+    mock_client = MagicMock()
+    mock_get_client.return_value = mock_client
+    mock_client.get_or_create_unit.return_value = "unit123"
+    mock_client.add_vocabulary.return_value = "new_card_uuid"
+
+    result = runner.invoke(app, ["add", "sub123", "Front Side", "Back Side", "--unit", "Unit A"])
+
+    assert result.exit_code == 0
+    assert "Looking up or creating unit 'Unit A'..." in result.stdout
+    assert "Successfully added card new_card_uuid" in result.stdout
+    mock_client.get_or_create_unit.assert_called_once_with("sub123", "Unit A")
+    mock_client.add_vocabulary.assert_called_once_with(
+        "sub123", "<p>Front Side</p>", "<p>Back Side</p>", unit_id="unit123"
     )
 
 
@@ -73,7 +91,7 @@ def test_update_command(mock_get_client):
     assert result.exit_code == 0
     assert "Successfully updated card card456" in result.stdout
     mock_client.update_vocabulary.assert_called_once_with(
-        "sub123", "card456", "<p>New Question</p>", "<p>New Answer</p>"
+        "sub123", "card456", "<p>New Question</p>", "<p>New Answer</p>", unit_id=None
     )
 
 

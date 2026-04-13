@@ -26,3 +26,16 @@
 - **Testing**: Verify changes using `uv run pytest`.
 
 Note: Keep instructions here universally applicable. Task-specific instructions should be kept outside this file or discovered via context.
+
+## RECENT UPDATES (SESSION SUMMARY)
+
+### Vocabulary Management (2026-04-14)
+- **Scope**: Bulk added 572 cards (286 unique entries) across two subjects:
+  - `360 Standard Sentences in Chinese Conversations 1 (Chinese-English)`
+  - `360 Standard Sentences in Chinese Conversations 1 (English-Chinese)`
+- **Units**: Populated `Lesson 1-5 Vocabulary` and `Preply Lesson 1-4 Vocabulary`.
+- **Methodology**:
+  - Utilized `pyphase6 import` with temporary JSON files for high-volume additions.
+  - Formatted the "Answer" field with HTML `<br/>` to separate Pinyin for proper Phase-6 multi-line rendering.
+  - Relied on Phase-6 API's `DUPLICATED_CONTENT` detection to safely skip existing entries.
+- **Technical Insight**: The CLI successfully handled large-scale imports (up to 65 cards per unit) while maintaining the saved session state from `~/.config/pyphase6/session.json`.
