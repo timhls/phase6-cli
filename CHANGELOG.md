@@ -1,6 +1,47 @@
 # CHANGELOG
 
 
+## v0.2.0 (2026-04-13)
+
+### Bug Fixes
+
+- Resolve mypy type errors
+  ([`7d1d46c`](https://github.com/timhls/phase6-cli/commit/7d1d46c9c4ce9e0816104a22c86d7e333d464c43))
+
+### Chores
+
+- Format code with ruff
+  ([`e0d8be6`](https://github.com/timhls/phase6-cli/commit/e0d8be6e2050cdc826635c77e1ffd2a80588b6bd))
+
+- Re-format with ruff
+  ([`2bfe770`](https://github.com/timhls/phase6-cli/commit/2bfe7706a6c062dbe9596bc494549b0c02cabd41))
+
+### Documentation
+
+- Add GitHub Copilot instructions for future sessions
+  ([`f946f48`](https://github.com/timhls/phase6-cli/commit/f946f48418b07675439b5caf4e6fcf65418e1c3c))
+
+Add comprehensive copilot-instructions.md covering: - Build, test, and lint commands using uv -
+  Three-layer architecture (CLI → Client → Models) - Key convention patterns for testing and API
+  requests - Session management and Playwright usage patterns - Release process with
+  semantic-release
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+- Migrate CLAUDE.md to AGENTS.md
+  ([`4b5ebf6`](https://github.com/timhls/phase6-cli/commit/4b5ebf66f287f4b8a1c02e3cddcd0ea18250ba53))
+
+### Features
+
+- Add unit management support and summarize session updates
+  ([`7e46661`](https://github.com/timhls/phase6-cli/commit/7e466613f136f3d5d53819e6df28b54600f27d92))
+
+### Testing
+
+- Update cli tests to include unit_id parameter
+  ([`fad5c00`](https://github.com/timhls/phase6-cli/commit/fad5c0075b3c0e71fc87acd4ecd696a66bf399d3))
+
+
 ## v0.1.3 (2026-03-06)
 
 ### Bug Fixes
