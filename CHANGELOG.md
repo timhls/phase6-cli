@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.3.0 (2026-04-13)
+
+### Features
+
+- Add unit deletion support and improve unit retrieval
+  ([`0800fde`](https://github.com/timhls/phase6-cli/commit/0800fde7322775bac7be20bc45190880e7536869))
+
+
 ## v0.2.0 (2026-04-13)
 
 ### Bug Fixes
