@@ -30,7 +30,7 @@ line-length = 100
 testpaths = ["tests"]
 
 [build-system]
-requires = ["uv_build==0.10.7"]
+requires = ["uv_build==0.12.5"]
 build-backend = "uv_build"
 
 [tool.semantic_release]
