@@ -4,6 +4,19 @@ A modern, blazingly fast Python client and Command Line Interface (CLI) for mana
 
 This tool reverse-engineers the private Phase-6 Single Page Application API, combining robust browser automation (via Playwright) for complex authentication with lightning-fast native REST API calls for vocabulary CRUD operations.
 
+## Agent Skill
+
+This repo is packaged as an **agent skill** (opencode / Claude Code compatible). The entire project lives in `.agents/skills/phase6/`:
+
+```
+.agents/skills/phase6/
+├── SKILL.md          # Skill definition: triggers, invocation, gotchas
+├── scripts/pyphase6/ # The Python package (CLI, client, models)
+└── tests/            # Pytest suite (fully offline, Playwright mocked)
+```
+
+Skill-aware agents discover it via `SKILL.md`; the wheel is built from the skill's `scripts/` dir by hatchling.
+
 ## Features
 
 - **Automated Login**: Uses a headless Playwright instance to perform the login flow and extract the required `x-jauthtoken` session tokens.
@@ -13,7 +26,7 @@ This tool reverse-engineers the private Phase-6 Single Page Application API, com
 
 ## Installation
 
-Ensure you have Python 3.11+ installed. We use `uv` to manage the environment and dependencies.
+Ensure you have Python 3.14.7 installed. We use `uv` to manage the environment and dependencies.
 
 ```bash
 # Clone the repository
@@ -45,7 +58,7 @@ List all the subjects (vocabulary books or lists) you currently own:
 ```bash
 uv run pyphase6 subjects
 ```
-*Take note of the `Subject ID` from the output, as you will need it to manage cards within that subject.*
+*Take note of the `Subject ID` from the output, as you will need it to manage cards within that subject. Add `--json` for agent-parseable output with full IDs.*
 
 ### 3. List Vocabulary
 
@@ -107,8 +120,8 @@ uv run pytest
 uv run ruff format .
 uv run ruff check .
 
-# Run type checks
-uv run mypy .
+# Run type checks (scoped to the skill package)
+uv run mypy .agents/skills/phase6/scripts/pyphase6
 ```
 
 ## License

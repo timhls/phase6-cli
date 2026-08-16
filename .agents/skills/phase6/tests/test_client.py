@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from pyphase6.client import AuthError, Phase6Client
 
 

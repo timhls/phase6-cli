@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 import re
 from pathlib import Path
 from typing import Optional
@@ -25,10 +26,18 @@ def get_authenticated_client() -> Phase6Client:
 
 @app.command()
 def login(
-    username: str = typer.Option(..., prompt=True, help="Your Phase-6 email address"),
-    password: str = typer.Option(..., prompt=True, hide_input=True, help="Your Phase-6 password"),
+    username: Optional[str] = typer.Option(
+        None, help="Your Phase-6 email address (falls back to PHASE6_USERNAME env var)"
+    ),
+    password: Optional[str] = typer.Option(
+        None, hide_input=True, help="Your Phase-6 password (falls back to PHASE6_PASSWORD env var)"
+    ),
 ):
     """Authenticate with the Phase-6 platform and save the session."""
+    username = username or os.environ.get("PHASE6_USERNAME") or typer.prompt("Username")
+    password = (
+        password or os.environ.get("PHASE6_PASSWORD") or typer.prompt("Password", hide_input=True)
+    )
     client = Phase6Client()
     with console.status(f"Logging in as {username} (this opens a headless browser)..."):
         try:
@@ -40,7 +49,9 @@ def login(
 
 
 @app.command()
-def subjects():
+def subjects(
+    as_json: bool = typer.Option(False, "--json", help="Output agent-parseable JSON"),
+):
     """List all vocabulary subjects (books/lists) you own."""
     client = get_authenticated_client()
     with console.status("Fetching subjects using automated browser..."):
@@ -49,6 +60,10 @@ def subjects():
         except APIConnectionError as e:
             console.print(f"[red]{e}[/red]")
             raise typer.Exit(1)
+
+    if as_json:
+        console.print_json(json.dumps([s.model_dump(exclude_none=True) for s in subs], default=str))
+        return
 
     table = Table(title="Your Phase-6 Subjects")
     table.add_column("Subject ID", style="cyan", no_wrap=True)
@@ -71,6 +86,7 @@ def subjects():
 def vocab(
     subject_id: str = typer.Argument(..., help="The ID of the subject to fetch vocabulary for"),
     limit: int = typer.Option(100, help="Maximum number of items to fetch"),
+    as_json: bool = typer.Option(False, "--json", help="Output agent-parseable JSON"),
 ):
     """List vocabulary items for a specific subject."""
     client = get_authenticated_client()
@@ -80,6 +96,10 @@ def vocab(
         except APIConnectionError as e:
             console.print(f"[red]{e}[/red]")
             raise typer.Exit(1)
+
+    if as_json:
+        console.print_json(vocab_list.model_dump_json(exclude_none=True))
+        return
 
     table = Table(title=f"Vocabulary Items (Showing {len(vocab_list.items)})")
     table.add_column("Card ID", style="cyan", no_wrap=True)

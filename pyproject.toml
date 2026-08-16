@@ -1,7 +1,7 @@
 [project]
 name = "pyphase6"
 version = "1.0.0"
-description = "Add your description here"
+description = "Python client and CLI for managing vocabulary in the Phase-6 web application, packaged as an agent skill"
 readme = "README.md"
 requires-python = "==3.14.7"
 dependencies = [
@@ -13,6 +13,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "bandit==1.9.4",
     "httpx==0.28.1",
     "mypy==2.3.1",
     "pytest==9.1.1",
@@ -21,7 +22,7 @@ dev = [
 ]
 
 [project.scripts]
-pyphase6 = "pyphase6.cli:app"
+pyphase6 = "pyphase6.__main__:app"
 
 [tool.ruff]
 line-length = 100
@@ -30,11 +31,14 @@ line-length = 100
 select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = [".agents/skills/phase6/tests"]
 
 [build-system]
-requires = ["uv_build==0.12.5"]
-build-backend = "uv_build"
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [".agents/skills/phase6/scripts/pyphase6"]
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
