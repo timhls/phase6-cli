@@ -1,14 +1,15 @@
-import re
 import csv
 import json
+import re
 from pathlib import Path
 from typing import Optional
-from rich.progress import track
+
 import typer
 from rich.console import Console
+from rich.progress import track
 from rich.table import Table
 
-from pyphase6.client import Phase6Client, AuthError, APIConnectionError
+from pyphase6.client import APIConnectionError, AuthError, Phase6Client
 
 app = typer.Typer(help="CLI for managing Phase-6 vocabulary")
 console = Console()
