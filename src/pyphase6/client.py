@@ -1,7 +1,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import List, Tuple, Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 from playwright.sync_api import sync_playwright
 

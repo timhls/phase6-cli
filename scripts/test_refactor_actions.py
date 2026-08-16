@@ -1,5 +1,5 @@
-from test_refactor_client import Phase6API
 from playwright.sync_api import sync_playwright
+from test_refactor_client import Phase6API
 
 
 class ExtendedAPI(Phase6API):

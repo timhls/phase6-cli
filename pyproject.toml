@@ -26,6 +26,9 @@ pyphase6 = "pyphase6.cli:app"
 [tool.ruff]
 line-length = 100
 
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 

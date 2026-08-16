@@ -1,8 +1,10 @@
 import json
-import pytest
-from unittest.mock import patch, MagicMock
 from pathlib import Path
-from pyphase6.client import Phase6Client, AuthError
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from pyphase6.client import AuthError, Phase6Client
 
 
 @pytest.fixture

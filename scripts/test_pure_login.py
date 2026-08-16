@@ -1,6 +1,7 @@
-import os
-import httpx
 import json
+import os
+
+import httpx
 
 username = os.environ.get("PHASE6_USERNAME")
 password = os.environ.get("PHASE6_PASSWORD")

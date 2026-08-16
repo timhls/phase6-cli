@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "python-semantic-release <11 requires rich<15; hold until PSR bumps its pin",
+      "matchPackageNames": ["rich"],
+      "allowedVersions": "<15"
+    }
+  ]
+}
