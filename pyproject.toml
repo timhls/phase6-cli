@@ -1,6 +1,6 @@
 [project]
 name = "pyphase6"
-version = "1.0.0"
+version = "1.1.0"
 description = "Python client and CLI for managing vocabulary in the Phase-6 web application, packaged as an agent skill"
 readme = "README.md"
 requires-python = "==3.14.7"
