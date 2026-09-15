@@ -6,9 +6,9 @@ readme = "README.md"
 requires-python = "==3.14.7"
 dependencies = [
     "playwright==1.62.0",
-    "pydantic==2.13.4",
+    "pydantic==2.13.5",
     "rich==14.3.4",
-    "typer==0.27.1",
+    "typer==0.27.2",
 ]
 
 [dependency-groups]
@@ -17,8 +17,8 @@ dev = [
     "httpx==0.28.1",
     "mypy==2.3.1",
     "pytest==9.1.1",
-    "python-semantic-release==10.6.1",
-    "ruff==0.16.7",
+    "python-semantic-release==10.6.2",
+    "ruff==0.16.4",
 ]
 
 [project.scripts]
